@@ -1,0 +1,13 @@
+.edit-set-page-wrapper button {
+    border: none;
+    cursor: pointer;
+}
+
+.edit-set-page-wrapper {
+    grid-area: content;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 20px;
+    margin-top: 20px;
+}

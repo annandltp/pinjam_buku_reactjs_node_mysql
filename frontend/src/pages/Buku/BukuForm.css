@@ -1,0 +1,79 @@
+.create-set-page-wrapper button {
+    border: none;
+    cursor: pointer;
+}
+
+.create-set-page-wrapper {
+    margin-top: 20px;
+    grid-area: content;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: rgba(0, 0, 0, 0);
+    width: 100%;
+    padding-bottom: 20px;
+}
+
+
+.cs-header-container {
+    grid-area: cs-header;
+    font-size: 22px;
+    font-weight: bold;
+    height: auto;
+    margin-bottom: 25px;
+}
+
+.cs-meta-container {
+    grid-area: cs-meta;
+}
+
+.cs-cards-container {
+    grid-area: cs-cards;
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+}
+
+.cs-cards-container .add-card {
+    background-color: var(--color-fg);
+    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    font-weight: bold;
+
+    align-items: center;
+    font-size: 18px;
+    height: 100px;
+    width: 100%;
+
+    transition: box-shadow 0.2s ease, color 0.2s ease;
+}
+
+.cs-cards-container .add-card:hover {
+    box-shadow: rgba(99, 99, 99, 0.6) 0px 2px 8px 0px;
+    color: var(--color-accent);
+}
+
+.cs-submit-button {
+    margin: auto;
+    margin-top: 10px;
+    font-size: 18px;
+    width: 200px;
+    padding: 14px;
+    background-color: var(--color-accent);
+    transition: background-color 0.2s;
+    box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+    font-weight: bold;
+}
+
+.cs-submit-button:hover {
+    background-color: rgba(22, 206, 120, 0.7);
+}
+
+@media (max-width: 1700px) {
+    .create-set-page-container {
+        width: 70%;
+    }
+}

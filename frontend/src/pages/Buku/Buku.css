@@ -1,0 +1,5 @@
+.sandbox-container {
+    grid-area: content;
+    width: 100%;
+    
+}

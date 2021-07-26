@@ -1,0 +1,202 @@
+import { useState, useEffect, useMemo, useContext, React } from 'react';
+import { useHistory } from 'react-router-dom';
+import { TableHeader, Pagination, Search } from "components/DataTable";
+import ConfirmModal from 'components/confirmModal/confirmModal.js';
+import { v4 as uuidv4 } from 'uuid';
+import { NotificationContext } from 'context/context.js';
+import axios from 'axios';
+
+export default function Datatable(props) {
+    const api = 'http://localhost:4000/';
+    const [loading, setLoading] = useState(false);
+    const [comments, setComments] = useState([]);
+    const [judul, setJudul] = useState('');
+    const [pengarang, setPengarang] = useState('');
+    const [totalItems, setTotalItems] = useState(0);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [search, setSearch] = useState("");
+    const [sorting, setSorting] = useState({ field: "", order: "" });
+    const [modal, setModal] = useState(false);
+    const history = useHistory();
+    const [confirm, setConfirm] = useState(null);
+    const [bukuId, setBukuId] = useState(0);
+    const notifications = useContext(NotificationContext);
+
+    function notify(type, text, status) {
+        notifications({
+            type: type,
+            value: {
+                id: uuidv4(),
+                text: text,
+                status: status,
+            }
+        });
+    }
+
+    // ========================================================================================================
+    // ==============================================FUNCTION DATATABLE========================================
+    // ========================================================================================================
+    const ITEMS_PER_PAGE = 50;
+
+    const headers = [
+        { name: "No#", field: "id", sortable: false },
+        { name: "Judul", field: "judul", sortaJudul: true },
+        { name: "Pengarang", field: "pengarang", sortable: true },
+        { name: "Action", field: "action", sortable: false }
+    ];
+
+    const mahasiswaData = useMemo(() => {
+        let computedComments = comments;
+        console.log(computedComments)
+        if (search) {
+            computedComments = computedComments.filter(
+                comment =>
+                    comment.judul.toLowerCJudul().includes(search.toLowerCase()) ||
+                    comment.pengarang.toLowerCase().includes(search.toLowerCase())
+            );
+        }
+
+        setTotalItems(computedComments.length);
+
+        //Sorting comments
+        if (sorting.field) {
+            const reversed = sorting.order === "asc" ? 1 : -1;
+            computedComments = computedComments.sort(
+                (a, b) =>
+                    reversed * a[sorting.field].localeCompare(b[sorting.field])
+            );
+        }
+
+        //Current Page slice
+        return computedComments.slice(
+            (currentPage - 1) * ITEMS_PER_PAGE,
+            (currentPage - 1) * ITEMS_PER_PAGE + ITEMS_PER_PAGE
+        );
+    }, [comments, currentPage, search, sorting]);
+    // ========================================================================================================
+    // ==============================================FUNCTION DATATABLE========================================
+    // ========================================================================================================
+
+    async function onEdit(event, set_id) {
+        event.stopPropagation();
+        history.push("/buku/edit/" + set_id + "");
+    }
+
+    useEffect(() => {
+        setTimeout(() => {
+            async function getData() {
+                setLoading(true);
+                const getURL = `${api}buku/get`;
+        
+                const response = await axios.get(getURL);
+                console.log(response.status);
+                if (response.status === 200) {
+                    const json = await response.data;
+                    console.log(json);
+                    
+                    setComments(json);
+                    setJudul(json.judul);                   
+                    setPengarang(json.pengarang);
+                }
+                setLoading(false);
+            }
+            getData();
+        },1)
+    }, []);
+
+    async function onDelete(set_id) {
+        if(confirm){
+            const settings = {
+                method: "POST",
+                credentials: "include",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+            }
+            const getURL = `http://localhost:4000/buku/delete/${set_id} `;
+            const response = await axios.post(getURL);
+            console.log(getURL);
+
+            if (response.status === 200) {
+                notify('ADD', 'Delete successfully!', 'Success');
+                window.location.reload();
+            }
+        }  
+    }
+
+    useEffect(() => {
+        if(confirm){
+            const buku_id = `${bukuId}`            
+            onDelete(buku_id);
+        }
+    }, [confirm]);
+
+    //Datatable HTML
+    return (
+        <div className="row w-100">
+            <ConfirmModal
+                state={[modal, setModal]}
+                setConfirm={setConfirm}
+                header={"Confirm"}
+                text={"Are you sure you want to delete this set? This action cannot be undone."}
+            />
+            <div className="col mb-3 col-12 text-center">
+                <div className="row">
+                    <div className="col-md-6">
+                        <Pagination
+                            total={totalItems}
+                            itemsPerPage={ITEMS_PER_PAGE}
+                            currentPage={currentPage}
+                            onPageChange={page => setCurrentPage(page)}
+                        />
+                    </div>
+                    <div className="col-md-6 d-flex flex-row-reverse">
+                        <Search
+                            onSearch={value => {
+                                setSearch(value);
+                                setCurrentPage(1);
+                            }}
+                        />
+                    </div>
+                </div>
+
+                <table className="table table-striped">
+                    <TableHeader
+                        headers={headers}
+                        onSorting={(field, order) =>
+                            setSorting({ field, order })
+                        }
+                    />
+                    <tbody>
+                        {mahasiswaData.map(row => (
+                            <tr>
+                                <th scope="row" key={row.id}>
+                                    {row.id}
+                                </th>
+                                <td>{row.judul}</td>
+                                <td>{row.pengarang}</td>
+                                <td>
+                                    <button
+                                    title="delete"
+                                    onClick={(event) => {
+                                        event.stopPropagation();
+                                        setModal(true);
+                                        setBukuId(row.id);
+                                    }}
+
+                                    >
+                                    <span className="material-icons delete">delete</span>
+                                    </button>
+                                    <button title="edit" onClick={(event) => onEdit(event, row.id)}>
+                                        <span className="material-icons edit">edit</span>
+                                    </button>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    );
+    
+}
